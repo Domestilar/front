@@ -228,7 +228,7 @@ export default {
         nome: "BRUNO SANTOS",
         cpf_cnpj: "013.963.562-90",
         rg: "365240",
-        data_nascimento: "1992-7-27",
+        data_nascimento: "1992-07-27",
         celular: "(96) 98101-7603",
         email: "bruno@brunoweblink.com",
         categoria_profissional: "EMPRESÁRIO",
@@ -249,7 +249,8 @@ export default {
         documento_foto_arquivo: [(v) => !!v || "Campo obrigatório."],
         cpf_arquivo: [(v) => !!v || "Campo obrigatório."],
       },
-      modalConfirmar: false
+      modalConfirmar: false,
+      imageBase64: ""
     };
   },
   watch(){

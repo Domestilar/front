@@ -117,3 +117,11 @@ export default {
   }
 };
 </script>
+<style scoped>
+.camera {
+  width: 100%;
+}
+.preview {
+  width: 100%;
+}
+</style>
