@@ -1,6 +1,6 @@
 <template>
-  <v-snackbar v-model="status" :bottom="y === 'bottom'" :color="getSnackbar.color" :left="x === 'left'"
-    :multi-line="mode === 'multi-line'" :right="x === 'right'" :timeout="getSnackbar.timeout" :top="y === 'top'"
+  <v-snackbar v-model="snackbarStore.status" :bottom="y === 'bottom'" :color="snackbarStore.color" :left="x === 'left'"
+    :multi-line="mode === 'multi-line'" :right="x === 'right'" :timeout="snackbarStore.timeout" :top="y === 'top'"
     :vertical="mode === 'vertical'">
     {{ snackbarStore.text }}
     <template v-slot:action="{ attrs }">

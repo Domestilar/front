@@ -2,7 +2,7 @@ export const state = () => ({
   overlay: false,
   user: "",
   token: "",
-  urlApi: 'http://domestilar.api/api',
+  urlApi: "http://domestilar.api/api",
   snackbar: {
     text: "",
     color: "",
@@ -26,8 +26,8 @@ export const mutations = {
   setUser(state, payload) {
     state.user = { ...payload };
   },
-  setToken(state, payload){
-    state.token = payload
+  setToken(state, payload) {
+    state.token = payload;
   },
   snackbarError(state, text) {
     state.snackbar.status = true;
@@ -59,6 +59,30 @@ export const mutations = {
 export const actions = {
   setOverlay({ commit }, payload) {
     commit("setOverlay", payload);
+  },
+  snackbarSuccess({ commit }, text) {
+    commit("snackbarSuccess", text);
+    setTimeout(() => {
+      commit("snackbarDisabled");
+    }, 6000);
+  },
+  snackbarError({ commit }, text) {
+    commit("snackbarError", text);
+    setTimeout(() => {
+      commit("snackbarDisabled");
+    }, 6000);
+  },
+  snackbarWarning({ commit }, text) {
+    commit("snackbarWarning", text);
+    setTimeout(() => {
+      commit("snackbarDisabled");
+    }, 6000);
+  },
+  snackbarInfo({ commit }, text) {
+    commit("snackbarInfo", text);
+    setTimeout(() => {
+      commit("snackbarDisabled");
+    }, 6000);
   },
 
   //Type = info, success, error or warning

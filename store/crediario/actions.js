@@ -78,7 +78,7 @@ export default {
         //   type: "success",
         //   message: "Solicitação enviada com sucesso.",
         // });
-        this.$router.push('/confirmacao')
+        this.$router.push("/confirmacao");
       })
       .catch((e) => {
         dispatch(
@@ -109,7 +109,7 @@ export default {
       .put(`/crediarios/${data.id}`, data)
       .then((res) => {
         commit("setOverlay", false, { root: true });
-        commit("snackbarSuccess", "Registro atualizado", { root: true });
+        dispatch("snackbarSuccess", "Registro atualizado", { root: true });
       })
       .catch((e) => {
         commit("setOverlay", false, { root: true });
@@ -117,16 +117,16 @@ export default {
       });
   },
   completarCrediario({ commit, dispatch }, data) {
-    commit('setOverlay', true, {root: true})
+    commit("setOverlay", true, { root: true });
     this.$axios
-      .post(`/crediario/${data.get('uuid')}/completar-cadastro`, data)
+      .post(`/crediario/${data.get("uuid")}/completar-cadastro`, data)
       .then((res) => {
-        console.log('completar', res.data);
-        this.$router.push('/confirmacao')
-        commit('setOverlay', false, {root: true})
+        console.log("completar", res.data);
+        this.$router.push("/confirmacao");
+        commit("setOverlay", false, { root: true });
       })
       .catch((e) => {
-        commit('setOverlay', false, {root: true})
+        commit("setOverlay", false, { root: true });
         console.log(e);
       });
   },
@@ -141,17 +141,19 @@ export default {
         });
         dispatch("setModalValidarCrediario", false);
         commit("setOverlay", false, { root: true });
-        commit("snackbarSuccess", "Cadastro validado com sucesso.", {root: true});
+        dispatch("snackbarSuccess", "Cadastro validado com sucesso.", {
+          root: true,
+        });
       })
       .catch((e) => {
         commit("setOverlay", false, { root: true });
-        commit("snackbarError", "Erro ao validar cadastro.", { root: true });
+        dispatch("snackbarError", "Erro ao validar cadastro.", { root: true });
         console.log(e);
       });
   },
   async aprovarCrediario({ commit, dispatch, getters }, id) {
     commit("setOverlay", true, { root: true });
-    const crediario = {...getters.getCrediario}
+    const crediario = { ...getters.getCrediario };
     await this.$axios
       .post(`/crediario/${id}/aprovar`)
       .then((res) => {
@@ -161,7 +163,7 @@ export default {
         });
         commit("setOverlay", false, { root: true });
         dispatch("setModalAprovarCrediario", false);
-        commit("snackbarSuccess", "Cadastro aprovado com sucesso.", {
+        dispatch("snackbarSuccess", "Cadastro aprovado com sucesso.", {
           root: true,
         });
       })
@@ -176,12 +178,12 @@ export default {
     this.$axios
       .delete(`/crediarios/data.id`)
       .then((res) => {
-        commit("snackbarError", "Registro excluído.", { root: true });
+        dispatch("snackbarError", "Registro excluído.", { root: true });
         dispatch("listarCrediario");
       })
       .catch((e) => {
         console.log(e);
-        commit("snackbarError", "Erro ao excluir registro.", { root: true });
+        dispatch("snackbarError", "Erro ao excluir registro.", { root: true });
       });
   },
   setModalValidarCrediario({ commit }, status) {

@@ -2,7 +2,7 @@
     <v-container fluid class="mt-12">
         <v-layout justify-center align-center>
             <v-flex shrink>
-            <v-layout justify-center align-center>
+                <v-layout justify-center align-center>
                     <v-flex shrink>
                         <v-img
                             align="center"
@@ -15,7 +15,6 @@
                     </v-flex>
                 </v-layout>
                 <v-card outlined>
-                
                     <v-card-title>Entrar</v-card-title>
                     <v-card-text>
                         <v-form ref="formLogin" class="px-3">
@@ -79,7 +78,7 @@ export default {
                 return
             }
 
-            // this.$store.commit("setOverlay", true)
+            this.$store.commit("setOverlay", true)
 
             // LoginService.login(this.dadosLogin)
             //     .then(res => {
@@ -99,22 +98,25 @@ export default {
                         password: this.dadosLogin.password
                     }
                 })
-                .then(res => {
-                    if(res.data.access_token){
-                        this.$router.push('/admin/crediario')
-                    }
-                })
+                    .then(res => {
+                        this.$store.commit("setOverlay", false)
+
+                        if (res.data.access_token) {
+                            this.$router.push('/admin/crediario')
+                        }
+                    })
 
                 // this.$route.push('/admin/crediarios')
             } catch (error) {
+                this.$store.commit("setOverlay", false)
                 console.log(e)
             }
 
 
         }
     },
-    created(){
-        if(this.$auth.loggedIn){
+    created() {
+        if (this.$auth.loggedIn) {
             this.$router.push('/admin/crediario')
         }
     }
