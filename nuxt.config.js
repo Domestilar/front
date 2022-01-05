@@ -3,8 +3,8 @@ import colors from "vuetify/es5/util/colors";
 export default {
   // Global page headers: https://go.nuxtjs.dev/config-head
   head: {
-    titleTemplate: "%s - front",
-    title: "front",
+    titleTemplate: "%s",
+    title: "Domestilar",
     htmlAttrs: {
       lang: "en",
     },
@@ -52,7 +52,8 @@ export default {
 
 
   axios: {
-    baseURL: 'http://domestilar.api/api'
+    // baseURL: 'http://domestilar.api/api'
+    baseURL: `${process.env.BASE_URL_API}/api`
   },
   // Vuetify module configuration: https://go.nuxtjs.dev/config-vuetify
   vuetify: {
@@ -92,7 +93,7 @@ export default {
     strategies: {
       laravelJWT: {
         provider: "laravel/jwt",
-        url: "http://domestilar.api",
+        url: process.env.BASE_URL_API,
         endpoints: {},
         token: {
           property: "access_token",
