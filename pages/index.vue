@@ -73,7 +73,7 @@
                       v-model="crediario.data_nascimento"
                       outlined
                       dense
-                      type="date"
+                      v-mask="'##/##/####'"
                       class="ml-1 mr-1"
                       :rules="rules.data_nascimento"
                     ></v-text-field>
