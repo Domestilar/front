@@ -1,6 +1,6 @@
 <template>
   <v-row justify="center" align="center">
-  <Overlay />
+    <Overlay />
     <v-col cols="12" sm="12" md="8" class="mt-12">
       <v-container fluid>
         <v-layout justify-center align-center>
@@ -209,6 +209,31 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+    <v-dialog
+      v-model="termos"
+      scrollable
+      persistent
+      :overlay="false"
+      transition="dialog-transition"
+    >
+      <v-card>
+        <v-card-actions>Termos</v-card-actions>
+        <v-card-text align="">
+          <p align="justify">
+            Declaro exatos e verdadeiros os dados constantes neste formulário de Pré-Cadastro e autorizo a minha inclusão no seu cadastro,
+            de acordo com o artigo 43, parágrafo 2º, do Código de Defesa do Consumidor. Autorizo a confirmação das informações acima apresentadas,
+            Autorizo aconsultas ao SCR (Sistema de Crédito do Banco Central),
+            <b>SPC, SERASA</b> eaos orgãos de Proteção ao Crédito.
+            Autorizo o envio de informações e o contato por telefone fixo, celular e/ou email.
+            <b>Crédito sujeito a análise e aprovação</b>
+          </p>
+          <p align="justify">Autorizo o envio pela Domestilar LTDA. de informações, promoções, novidade dos produtos e serviços da loja, para os meus contatos indicados no formulário de pré-cadastro.</p>
+        </v-card-text>
+        <v-card-actions>
+          <v-btn color="success" block @click="termos = false">ACEITAR TERMOS</v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
   </v-row>
 </template>
 
@@ -250,13 +275,14 @@ export default {
         cpf_arquivo: [(v) => !!v || "Campo obrigatório."],
       },
       modalConfirmar: false,
-      imageBase64: ""
+      imageBase64: "",
+      termos: true
     };
   },
-  watch(){
+  watch() {
     // getCrediario(){
     //   if(this.getCrediario.foto_selfie){
-        
+
     //   }
     // }
   },
