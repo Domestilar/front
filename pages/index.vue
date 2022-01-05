@@ -225,13 +225,13 @@ export default {
   data() {
     return {
       crediario: {
-        nome: "BRUNO SANTOS",
-        cpf_cnpj: "013.963.562-90",
-        rg: "365240",
-        data_nascimento: "1992-07-27",
-        celular: "(96) 98101-7603",
-        email: "bruno@brunoweblink.com",
-        categoria_profissional: "EMPRESÁRIO",
+        nome: "",
+        cpf_cnpj: "",
+        rg: "",
+        data_nascimento: "",
+        celular: "",
+        email: "",
+        categoria_profissional: "",
         comprovante_residencia_arquivo: "",
         documento_foto_arquivo: "",
         cpf_cnpj_arquivo: "",
