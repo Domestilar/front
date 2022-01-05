@@ -73,6 +73,8 @@
                       v-model="crediario.data_nascimento"
                       outlined
                       dense
+                      hint="Ex: 01/01/2000"
+                      placeholder="Ex: 01/01/2000"
                       v-mask="'##/##/####'"
                       class="ml-1 mr-1"
                       :rules="rules.data_nascimento"
