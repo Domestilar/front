@@ -118,10 +118,10 @@ export default {
   },
   completarCrediario({ commit, dispatch }, data) {
     commit("setOverlay", true, { root: true });
+    console.log('dados reenviados na actions', data)
     this.$axios
       .post(`/crediario/${data.get("uuid")}/completar-cadastro`, data)
       .then((res) => {
-        console.log("completar", res.data);
         this.$router.push("/confirmacao");
         commit("setOverlay", false, { root: true });
       })
@@ -169,8 +169,31 @@ export default {
       })
       .catch((e) => {
         commit("setOverlay", false, { root: true });
-        commit("snackbarError", "Erro ao aprovar cadastro.", { root: true });
+        dispatch("snackbarError", "Erro ao aprovar cadastro.", { root: true });
 
+        console.log(e);
+      });
+  },
+  async rejeitarCrediario({ commit, dispatch, getters }, data) {
+    commit("setOverlay", true, { root: true });
+    const crediario = { ...getters.getCrediario };
+    await this.$axios
+      .post(`/crediario/${data.id}/rejeitar`, data)
+      .then((res) => {
+        commit("setCrediario", {
+          ...crediario,
+          status: res.data.status,
+          motivo_rejeicao: res.data.motivo_rejeicao
+        });
+        commit("setOverlay", false, { root: true });
+        dispatch("setModalRejeitarCrediario", false);
+        dispatch("snackbarWarning", "Cadastro rejeitado.", {
+          root: true,
+        });
+      })
+      .catch(e => {
+        commit("setOverlay", false, { root: true });
+        dispatch("snackbarError", "Erro ao rejeitar cadastro.", { root: true });
         console.log(e);
       });
   },
@@ -196,6 +219,12 @@ export default {
     commit("setModalAprovarCrediario", false);
     setTimeout(() => {
       commit("setModalAprovarCrediario", status);
+    }, 100);
+  },
+  setModalRejeitarCrediario({ commit }, status) {
+    commit("setModalRejeitarCrediario", false);
+    setTimeout(() => {
+      commit("setModalRejeitarCrediario", status);
     }, 100);
   },
 };

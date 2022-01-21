@@ -14,6 +14,9 @@ export default {
     setModalAprovarCrediario(state, payload){
         state.modalAprovarCrediario = payload
     },
+    setModalRejeitarCrediario(state, payload){
+        state.modalRejeitarCrediario = payload
+    },
     setAnexosCrediario(state, payload){
         state.crediario.anexos = [...payload]
     }

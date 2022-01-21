@@ -1,5 +1,6 @@
 <template>
     <v-container fluid class="mt-12">
+        <Snackbar />
         <v-layout justify-center align-center>
             <v-flex shrink>
                 <v-layout justify-center align-center>
@@ -53,33 +54,30 @@
 <script>
 import { mapActions, mapGetters } from 'vuex'
 import LoginService from "@/services/LoginService"
+import Snackbar from '../../components/shared/Snackbar.vue'
 export default {
     auth: false,
     data() {
         return {
             dadosLogin: {
-                email: "administrador@domestilar.com",
-                password: "123456"
+                email: "",
+                password: ""
             },
             rules: {
                 email: [(v) => !!v || "Campo obrigatório."],
                 password: [(v) => !!v || "Campo obrigatório."],
             }
-        }
+        };
     },
     computed: {
-        ...mapGetters({
-
-        })
+        ...mapGetters({})
     },
     methods: {
         login() {
             if (this.$refs.formLogin.validate() == false) {
-                return
+                return;
             }
-
-            this.$store.commit("setOverlay", true)
-
+            this.$store.commit("setOverlay", true);
             // LoginService.login(this.dadosLogin)
             //     .then(res => {
             //         this.$store.commit("setUser", res.data)
@@ -90,35 +88,35 @@ export default {
             //         console.log(e)
             //         this.$store.commit("setOverlay", false)
             //     })
-
             try {
-                this.$auth.loginWith('laravelJWT', {
+                this.$auth.loginWith("laravelJWT", {
                     data: {
                         email: this.dadosLogin.email,
                         password: this.dadosLogin.password
                     }
-                })
-                    .then(res => {
-                        this.$store.commit("setOverlay", false)
+                }).then(res => {
+                    this.$store.commit("setOverlay", false);
+                    if (res.data.access_token) {
+                        this.$router.push("/admin/crediario");
+                    }
+                }).catch(e => {
+                    this.$store.dispatch("snackbarError", "E-mail ou senha inválido.");
 
-                        if (res.data.access_token) {
-                            this.$router.push('/admin/crediario')
-                        }
-                    })
-
+                });
                 // this.$route.push('/admin/crediarios')
-            } catch (error) {
-                this.$store.commit("setOverlay", false)
-                console.log(e)
             }
-
-
+            catch (error) {
+                this.$store.commit("setOverlay", false);
+                this.$store.dispatch("snackbarError", "Erro ao efetuar login.");
+                console.log(e);
+            }
         }
     },
     created() {
         if (this.$auth.loggedIn) {
-            this.$router.push('/admin/crediario')
+            this.$router.push("/admin/crediario");
         }
-    }
+    },
+    components: { Snackbar }
 }
 </script>

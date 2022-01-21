@@ -11,5 +11,6 @@ export default () => ({
         'DO LAR',
     ],
     modalValidarCrediario: false,
-    modalAprovarCrediario: false
+    modalAprovarCrediario: false,
+    modalRejeitarCrediario: false,
 })

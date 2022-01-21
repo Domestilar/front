@@ -22,14 +22,15 @@
                 </v-layout>
             </v-container>
 
-            <v-stepper v-model="e1" outlined>
+            <v-stepper v-model="e1" outlined v-if="crediario.id">
                 <v-stepper-header outlined>
-                    <v-stepper-step :complete="e1 > 1" step="1">Referência pessoal</v-stepper-step>
-                    <v-divider></v-divider>
-                    <v-stepper-step step="2">Documentos</v-stepper-step>
+                    <!-- <v-stepper-step :complete="e1 > 1" step="1">Referência pessoal</v-stepper-step> -->
+                    <!-- <v-divider></v-divider> -->
+                    <v-stepper-step step="1">Documentos</v-stepper-step>
+                    <v-stepper-step step="2" v-if="verificaRejeicao('Selfie não aprovada')">Selfie</v-stepper-step>
                 </v-stepper-header>
                 <v-stepper-items>
-                    <v-stepper-content step="1">
+                    <!-- <v-stepper-content step="1">
                         <h3>Indique algumas referências pessoais</h3>
                         <v-form ref="formDadosReferencias" class="mt-3">
                             <h5 class="mb-4">1ª Referência</h5>
@@ -108,13 +109,55 @@
                             <v-spacer></v-spacer>
                             <v-btn color="primary" @click="avancarEtapa2()">Próximo</v-btn>
                         </v-card-actions>
-                    </v-stepper-content>
-                    <v-stepper-content step="2">
+                    </v-stepper-content>-->
+                    <v-stepper-content step="1">
                         <h3>Anexe os documentos abaixo</h3>
-                        <v-form ref="formDocumentos" class="mt-3">
+                        <v-form ref="formDocumentos" class="mt-3" v-if="crediario.id">
                             <v-card-text>
                                 <v-layout row wrap>
-                                    <v-flex xs12 md12>
+                                    <v-flex xs12 md12 v-if="verificaAnexoRejeitado('CPF')">
+                                        <v-file-input
+                                            outlined
+                                            dense
+                                            label="CPF"
+                                            class="mr-1 ml-1"
+                                            :rules="rules.cpf_arquivo"
+                                            @change="selecionaCpf"
+                                        ></v-file-input>
+                                    </v-flex>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('DOCUMENTO COM FOTO')"
+                                    >
+                                        <v-file-input
+                                            outlined
+                                            dense
+                                            label="Documento com foto"
+                                            placeholder="RG, CNH, CPTS ou outros"
+                                            class="mr-1 ml-1"
+                                            :rules="rules.documento_foto_arquivo"
+                                            @change="selecionaDocumentoFoto"
+                                        ></v-file-input>
+                                    </v-flex>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('COMPROVANTE DE RESIDENCIA')"
+                                        class="mb-2"
+                                    >
+                                        <v-file-input
+                                            outlined
+                                            dense
+                                            label="Comprovante de residência no nome do titular"
+                                            class="mr-1 ml-1"
+                                            hint="Energia, água, telefone fixo ou faturas (TV por assinatura, cartão de crédito ou IPTU)"
+                                            persistent-hint
+                                            :rules="rules.comprovante_residencia_arquivo"
+                                            @change="selecionComprovanteResidencial"
+                                        ></v-file-input>
+                                    </v-flex>
+                                    <v-flex xs12 md12 v-if="crediario.validado == true">
                                         <v-select
                                             :items="getCategoriasProfissionais"
                                             v-model="crediario.categoria_profissional"
@@ -131,31 +174,40 @@
                                     wrap
                                     v-if="crediario.categoria_profissional == 'ASSALARIADO (funcionário de empresa privada, empregado doméstico)'"
                                 >
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('CONTRATO DE TRABALHO')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
                                             label="Carteira de trabalho"
                                             class="mr-1 ml-1"
-                                            hint="Mínimo de 120 dias assinado"
+                                            hint="(funcionário de empresa privada, empregado doméstico) - Mínimo de 120 dias assinado"
+                                            persistent-hint
                                             :rules="rules.carteira_trabalho_arquivo"
                                             @change="selecionaCarteiraTrabalho"
                                         ></v-file-input>
                                     </v-flex>
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('CONTRA CHEQUE')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
                                             label="Contra cheque atual"
+                                            hint="(Salário variável trazer os 3 últimos para média salarial)"
+                                            persistent-hint
                                             class="mr-1 ml-1"
                                             :rules="rules.contra_cheque_arquivo"
                                             multiple
-                                            persistent-hint
-                                            hint="(Salário variável trazer os 3 últimos para média salarial)"
                                             @change="selecionaContraCheque"
                                         ></v-file-input>
                                     </v-flex>
-                                    <v-flex xs12 md12>
+                                    <!-- <v-flex xs12 md12 v-if="verificaAnexoRejeitado('CONTRA CHEQUE')">
                                         <v-text-field
                                             label="Telefone fixo do trabalho"
                                             outlined
@@ -164,7 +216,7 @@
                                             class="ml-1 mr-1"
                                             v-mask="['(##) ####-####', '(##) #####-####']"
                                         ></v-text-field>
-                                    </v-flex>
+                                    </v-flex>-->
                                 </v-layout>
 
                                 <!-- Arquivos funcionário público -->
@@ -173,26 +225,29 @@
                                     wrap
                                     v-if="crediario.categoria_profissional == 'FUNCIONÁRIO PÚBLICO (federal, estadual, municipal, autarquia)'"
                                 >
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('CONTRA CHEQUE')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
-                                            label="Contra cheque atual "
-                                            class="mr-1 ml-1"
+                                            label="Contra cheque atual"
                                             hint="(Salário variável trazer os 3 últimos para média salarial)"
                                             persistent-hint
+                                            class="mr-1 ml-1"
                                             :rules="rules.contra_cheque_arquivo"
-                                            @change="selecionaContraCheque"
+                                            @change="selecionaCarteiraContraCheque"
                                         ></v-file-input>
                                     </v-flex>
-                                    <v-text-field
+                                    <!-- <v-text-field
                                         label="Telefone fixo do trabalho"
                                         outlined
                                         dense
                                         v-model="crediario.telefone_empresa"
-                                        v-mask="['(##) ####-####', '(##) #####-####']"
                                         class="ml-1 mr-1"
-                                    ></v-text-field>
+                                    ></v-text-field>-->
                                 </v-layout>
 
                                 <!-- Arquvios aposentado e pensionista -->
@@ -201,7 +256,11 @@
                                     wrap
                                     v-if="crediario.categoria_profissional == 'APOSENTADO E PENSIONISTA (INSS ou Órgãos Públicos)'"
                                 >
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('CARTÃO BENEFICIÁRIO')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
@@ -212,7 +271,11 @@
                                         ></v-file-input>
                                     </v-flex>
 
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('CONTRA CHEQUE')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
@@ -220,17 +283,21 @@
                                             class="mr-1 ml-1"
                                             hint="Do beneficiário ou aposentado"
                                             :rules="rules.contra_cheque_arquivo"
-                                            @change="selecionaContraCheque"
+                                            @change="selecionaCarteiraContraCheque"
                                         ></v-file-input>
                                     </v-flex>
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('DEMONSTRATIVO DE PAGAMENTO')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
                                             label="Demonstrativo de pagamento"
                                             class="mr-1 ml-1"
-                                            persistent-hint
                                             hint="Aposentadoria e/ou pensão ou carta de concessão"
+                                            persistent-hint
                                             :rules="rules.demonstrativo_pagamento_arquivo"
                                             @change="selecionaDemonstrativoPagamento"
                                         ></v-file-input>
@@ -256,19 +323,21 @@
                                         v-if="crediario.categoria_autonomo == 'Micro Empreendedor Individual'"
                                         class="ma-0"
                                     >
-                                        <v-flex xs12 md12>
+                                        <v-flex xs12 md12 v-if="verificaAnexoRejeitado('DECORE')">
                                             <v-file-input
                                                 outlined
                                                 dense
-                                                label="DECORE"
-                                                hint="com assinatura autenticada"
-                                                persistent-hint
+                                                label="DECORE com assinatura autenticada"
                                                 class="mr-1 ml-1"
                                                 :rules="rules.decore_arquivo"
                                                 @change="selecionaDecore"
                                             ></v-file-input>
                                         </v-flex>
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('DECLARACAO IRPF')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -285,31 +354,37 @@
                                         v-if="crediario.categoria_autonomo == 'Profissional Liberal'"
                                         class="ma-0"
                                     >
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('CARTEIRA CONSELHO')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
-                                                label="Carteira do Conselho Regulador"
+                                                label="Carteira do Conselho Regulador "
+                                                class="mr-1 ml-1"
                                                 hint="(CRA, OAB, CRO,CRE, CRC ou outros)"
                                                 persistent-hint
-                                                class="mr-1 ml-1"
                                                 :rules="rules.carteira_conselho_arquivo"
                                                 @change="selecionaCarteiraConselho"
                                             ></v-file-input>
                                         </v-flex>
-                                        <v-flex xs12 md12>
+                                        <v-flex xs12 md12 v-if="verificaAnexoRejeitado('DECORE')">
                                             <v-file-input
                                                 outlined
                                                 dense
-                                                label="DECORE "
+                                                label="DECORE com assinatura autenticada"
                                                 class="mr-1 ml-1"
-                                                hint="com assinatura autenticada"
-                                                persistent-hint
                                                 :rules="rules.decore_arquivo"
                                                 @change="selecionaDecore"
                                             ></v-file-input>
                                         </v-flex>
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('DECLARACAO IRPF')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -319,7 +394,11 @@
                                                 @change="selecionaDeclaracaoIRPF"
                                             ></v-file-input>
                                         </v-flex>
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('CONTRATO DE TRABALHO')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -336,18 +415,28 @@
                                         v-if="crediario.categoria_autonomo == 'Revendedores de Produtos Porta à Porta'"
                                         class="ma-0"
                                     >
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('BOLETO QUITADO')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
-                                                label="3 Últimos boletos de compra dos produtos que revende quitados"
+                                                label="3 Últimos boletos de compra"
+                                                hint="dos produtos que revende quitados"
+                                                persistent-hint
                                                 class="mr-1 ml-1"
                                                 :rules="rules.boleto_quitado"
                                                 @change="selecionaBoletoQuitado"
                                                 multiple
                                             ></v-file-input>
                                         </v-flex>
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('CARNÊ QUITADO')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -359,19 +448,21 @@
                                             ></v-file-input>
                                         </v-flex>
 
-                                        <v-flex xs12 md12>
+                                        <v-flex xs12 md12 v-if="verificaAnexoRejeitado('DECORE')">
                                             <v-file-input
                                                 outlined
                                                 dense
-                                                label="DECORE"
-                                                hint="com assinatura autenticada"
-                                                persistent-hint
+                                                label="DECORE com assinatura autenticada"
                                                 class="mr-1 ml-1"
                                                 :rules="rules.decore_arquivo"
                                                 @change="selecionaDecore"
                                             ></v-file-input>
                                         </v-flex>
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('DECLARACAO IRPF')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -388,7 +479,11 @@
                                         v-if="crediario.categoria_autonomo == 'Trabalhador Rural'"
                                         class="ma-0"
                                     >
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('CARNÊ QUITADO')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -399,7 +494,11 @@
                                             ></v-file-input>
                                         </v-flex>
 
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('CARTEIRA DE TRABALHO')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -409,7 +508,11 @@
                                                 @change="selecionaCarteiraTrabalho"
                                             ></v-file-input>
                                         </v-flex>
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('CARTEIRA DE COOPERATIVA')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -426,7 +529,11 @@
                                         v-if="crediario.categoria_autonomo == 'Renda Proveniente de Trabalho no Exterior'"
                                         class="ma-0"
                                     >
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('COMPROVANTE DE RENDIMENTO')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -437,7 +544,11 @@
                                             ></v-file-input>
                                         </v-flex>
 
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('CONTRATO DE TRABALHO')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -446,7 +557,11 @@
                                                 @change="selecionaContratoTrabalho"
                                             ></v-file-input>
                                         </v-flex>
-                                        <v-flex xs12 md12>
+                                        <v-flex
+                                            xs12
+                                            md12
+                                            v-if="verificaAnexoRejeitado('DECLARACAO IRPF')"
+                                        >
                                             <v-file-input
                                                 outlined
                                                 dense
@@ -463,7 +578,7 @@
                                     wrap
                                     v-if="crediario.categoria_profissional == 'EMPRESÁRIO'"
                                 >
-                                    <v-flex xs12 md12>
+                                    <v-flex xs12 md12 v-if="verificaAnexoRejeitado('CARTÃO CNPJ')">
                                         <v-file-input
                                             outlined
                                             dense
@@ -474,17 +589,21 @@
                                         ></v-file-input>
                                     </v-flex>
 
-                                    <v-flex xs12 md12>
+                                    <v-flex xs12 md12 v-if="verificaAnexoRejeitado('PRÓ-LABORE')">
                                         <v-file-input
                                             outlined
                                             dense
                                             label="Pró-labore"
                                             class="mr-1 ml-1"
-                                            :rules="rules.pro_labore"
+                                            :rules="rules.pro_labore_arquivo"
                                             @change="selecionaProLabore"
                                         ></v-file-input>
                                     </v-flex>
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('DECLARACAO IRPF')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
@@ -500,7 +619,7 @@
                                     wrap
                                     v-if="crediario.categoria_profissional == 'EMPRESÁRIO'"
                                 >
-                                    <v-flex xs12 md12>
+                                    <v-flex xs12 md12 v-if="verificaAnexoRejeitado('CARTÃO CNPJ')">
                                         <v-file-input
                                             outlined
                                             dense
@@ -510,20 +629,9 @@
                                             @change="selecionaCartaoCNPJ"
                                         ></v-file-input>
                                     </v-flex>
-
-                                    <v-flex xs12 md12>
-                                        <v-file-input
-                                            outlined
-                                            dense
-                                            label="Pró-labore"
-                                            class="mr-1 ml-1"
-                                            :rules="rules.pro_labore"
-                                            @change="selecionaProLabore"
-                                        ></v-file-input>
-                                    </v-flex>
                                 </v-layout>
                                 <h5
-                                    v-if="crediario.categoria_profissional == 'DO LAR'"
+                                    v-if="crediario.categoria_profissional == 'DO LAR' && verificaAnexoRejeitado('CERTIDÃO CASAMENTO/UNIÃO ESTÁVEL') && verificaAnexoRejeitado('CONTRA CHEQUE')"
                                     class="mt-5 mb-5"
                                 >Documentação do Cônjuge</h5>
                                 <v-layout
@@ -531,7 +639,11 @@
                                     wrap
                                     v-if="crediario.categoria_profissional == 'DO LAR'"
                                 >
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('CERTIDÃO CASAMENTO/UNIÃO ESTÁVEL')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
@@ -541,7 +653,11 @@
                                             @change="selecionaCertidaoCasamentoUniaoEstavel"
                                         ></v-file-input>
                                     </v-flex>
-                                    <v-flex xs12 md12>
+                                    <v-flex
+                                        xs12
+                                        md12
+                                        v-if="verificaAnexoRejeitado('CONTRA CHEQUE')"
+                                    >
                                         <v-file-input
                                             outlined
                                             dense
@@ -566,8 +682,39 @@
                             <v-spacer></v-spacer>
                             <v-btn
                                 color="primary"
+                                @click="avancarEtapa2()"
+                                v-if="verificaRejeicao('Selfie não aprovada')"
+                            >Próximo</v-btn>
+                            <v-btn
+                                v-else
+                                color="primary"
                                 @click="modalConfirmar = true"
                                 :loading="$store.getters.getOverlay"
+                            >Enviar dados</v-btn>
+                        </v-card-actions>
+                    </v-stepper-content>
+                    <v-stepper-content step="2">
+                        <v-card-text>
+                            <h3>Bata uma nova selfie</h3>
+                            <PhotoCaptureVue
+                                v-model="imageBase64"
+                                v-if="e1 == 2"
+                                align="center"
+                                class="mt-3"
+                            />
+                        </v-card-text>
+                        <v-card-actions>
+                            <v-btn
+                                color="default"
+                                @click="e1 = 2"
+                                :loading="$store.getters.getOverlay"
+                            >Anterior</v-btn>
+                            <v-spacer></v-spacer>
+                            <v-btn
+                                color="success"
+                                @click="modalConfirmar = true"
+                                :loading="$store.getters.getOverlay"
+                                v-if="this.getCrediario.foto_selfie"
                             >Enviar dados</v-btn>
                         </v-card-actions>
                     </v-stepper-content>
@@ -599,6 +746,7 @@
 import { mapGetters, mapActions } from "vuex";
 // import {PhotoCapture} from 'vue-media-recorder'
 import PhotoCaptureVue from "@/components/PhotoCapture.vue";
+import { relativeTimeThreshold } from "moment";
 export default {
     name: "IndexPage",
     auth: false,
@@ -607,6 +755,7 @@ export default {
     },
     data() {
         return {
+            imageBase64: "",
             crediario: {
                 categoria_profissional: "EMPRESÁRIO",
                 contra_cheque_arquivo: "",
@@ -625,6 +774,10 @@ export default {
                 cartao_cnpj_arquivo: "",
                 pro_labore_arquivo: "",
                 certidao_casamento_uniao_estavel_arquivo: "",
+                comprovante_residencia_arquivo: "",
+                documento_foto_arquivo: "",
+                cpf_cnpj_arquivo: "",
+
             },
             referencia: {
                 nome1: '',
@@ -654,6 +807,12 @@ export default {
                 comprovante_rendimento: [(v) => !!v || "Campo obrigatório."],
                 cartao_cnpj: [(v) => !!v || "Campo obrigatório."],
                 certidao_casamento_uniao_estavel: [(v) => !!v || "Campo obrigatório."],
+                declaracao_irpf_arquivo: [(v) => !!v || "Campo obrigatório."],
+                pro_labore_arquivo: [(v) => !!v || "Campo obrigatório."],
+                decore_arquivo: [(v) => !!v || "Campo obrigatório."],
+                documento_foto_arquivo: [(v) => !!v || "Campo obrigatório."],
+                cpf_arquivo: [(v) => !!v || "Campo obrigatório."],
+                comprovante_residencia_arquivo: [(v) => !!v || "Campo obrigatório."],
             },
             categoriasAutonomo: [
                 'Micro Empreendedor Individual',
@@ -663,7 +822,31 @@ export default {
                 'Renda Proveniente de Trabalho no Exterior',
             ],
             carteiraTrabalhoArquivo: "",
-            modalConfirmar: false
+            modalConfirmar: false,
+            tiposRejeicoesAnexos: [
+                'CPF',
+                'DOCUMENTO COM FOTO',
+                'COMPROVANTE DE RESIDENCIA',
+                'CONTRATO DE TRABALHO',
+                'CONTRA CHEQUE',
+                'CARTÃO BENEFICIÁRIO',
+                'DEMONSTRATIVO DE PAGAMENTO',
+                'AUTÔNOMO',
+                'DECORE',
+                'CARTEIRA CONSELHO',
+                'DECLARACAO IRPF',
+                'CONTRATO DE TRABALHO',
+                'BOLETO QUITADO',
+                'CARNÊ QUITADO',
+                'CARTEIRA DE COOPERATIVA',
+                'COMPROVANTE DE RENDIMENTO',
+                'CARTÃO CNPJ',
+                'PRÓ-LABORE',
+                'CERTIDÃO CASAMENTO/UNIÃO ESTÁVEL',
+            ],
+            tiposRejeicoes: [
+                'Selfie não aprovada'
+            ]
         };
     },
     watch: {
@@ -753,10 +936,19 @@ export default {
             );
 
             data.append("cpf_cnpj_arquivo", this.crediario.cpf_cnpj_arquivo);
-
+            if (this.crediario.comprovante_residencia_arquivo) {
+                data.append('comprovante_residencia_arquivo', this.crediario.comprovante_residencia_arquivo);
+            }
+            if (this.crediario.cpf_arquivo) {
+                data.append('cpf_cnpj_arquivo', this.crediario.cpf_arquivo);
+            }
+            if (this.crediario.documento_foto_arquivo) {
+                data.append('documento_foto_arquivo', this.crediario.documento_foto_arquivo);
+            }
             if (this.crediario.telefone_empresa) {
                 data.append('telefone_empresa', this.crediario.telefone_empresa);
             }
+            
             if (this.crediario.carteira_trabalho_arquivo) {
                 data.append('carteira_trabalho_arquivo', this.crediario.carteira_trabalho_arquivo);
             }
@@ -832,24 +1024,64 @@ export default {
                 data.append('referencia_ramal2', this.referencia.ramal2)
             }
 
+            if (this.crediario.foto_selfie) {
+                data.append("foto_selfie", this.crediario.foto_selfie)
+            }
+
+            console.log('dados reenviados',data)
+
             this.completarCrediario(data);
         },
-    },
-    created() {
-        // console.log(this.$store.getters.getOverlay)
+        avancarEtapa2() {
+            this.$refs.formDocumentos.validate() ? this.e1 = 2 : false;
+        },
+        verificaAnexoRejeitado(tipo_anexo) {
+            let anexos = this.crediario.anexos.filter((item) => {
+                if (item.tipo == tipo_anexo && item.status == 'REJEITADO') {
+                    return item;
+                }
+            })
 
+            if (anexos.length > 0) {
+                return true
+            } else {
+                return false
+            }
+        },
+        verificaRejeicao(rejeicao) {
+            let rejeicoes = this.crediario.rejeicoes.filter((item) => {
+                return item.motivo == rejeicao
+            })
+
+            if (rejeicoes.length > 0) {
+                return true
+            } else {
+                return false
+            }
+        }
+    },
+
+    created() {
         this.$axios.get(`/crediario/${this.$route.params.uuid}/visualizar`)
             .then(res => {
                 this.crediario = res.data
+                const quantidadeRejeicoesAnexos = 0;
+                const quantidadeRejeicoes = 0;
+                this.tiposRejeicoesAnexos.forEach(item => {
+                    this.verificaAnexoRejeitado(item) == true ? quantidadeRejeicoesAnexos++ : 0
+                })
 
-                if (this.crediario.status == 'AGUARDANDO APROVAÇÃO' || this.crediario.status == 'AGUARDANDO VALIDAÇÃO' || this.crediario.status == 'APROVADO') {
+                this.tiposRejeicoes.forEach(item => {
+                    this.verificaRejeicao(item) == true ? quantidadeRejeicoes++ : 0
+                })
+
+                if (quantidadeRejeicoesAnexos == 0 && quantidadeRejeicoes == 0) {
                     this.$router.push('/confirmacao')
                 }
             })
             .catch(e => {
                 console.log(e)
             })
-        this.$store.dispatch('alert', { type: 'success', message: 'teste alert' })
     }
 };
 </script>

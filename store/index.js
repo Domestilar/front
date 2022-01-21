@@ -7,7 +7,7 @@ export const state = () => ({
     text: "",
     color: "",
     status: false,
-    timeout: 6000,
+    timeout: 10000,
   },
 });
 
@@ -64,25 +64,25 @@ export const actions = {
     commit("snackbarSuccess", text);
     setTimeout(() => {
       commit("snackbarDisabled");
-    }, 6000);
+    }, 10000);
   },
   snackbarError({ commit }, text) {
     commit("snackbarError", text);
     setTimeout(() => {
       commit("snackbarDisabled");
-    }, 6000);
+    }, 10000);
   },
   snackbarWarning({ commit }, text) {
     commit("snackbarWarning", text);
     setTimeout(() => {
       commit("snackbarDisabled");
-    }, 6000);
+    }, 10000);
   },
   snackbarInfo({ commit }, text) {
     commit("snackbarInfo", text);
     setTimeout(() => {
       commit("snackbarDisabled");
-    }, 6000);
+    }, 10000);
   },
 
   //Type = info, success, error or warning

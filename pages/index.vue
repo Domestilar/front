@@ -1,6 +1,7 @@
 <template>
   <v-row justify="center" align="center">
     <Overlay />
+    <Snackbar />
     <v-col cols="12" sm="12" md="8" class="mt-12">
       <v-container fluid>
         <v-layout justify-center align-center>
@@ -54,6 +55,7 @@
                       dense
                       class="ml-1 mr-1"
                       v-mask="'###.###.###-##'"
+                      @blur="consultaCpf()"
                       :rules="rules.cpf_cnpj"
                     ></v-text-field>
                   </v-flex>
@@ -74,7 +76,7 @@
                       outlined
                       dense
                       hint="Ex: 01/01/2000"
-                      placeholder="Ex: 01/01/2000"
+                      persistent-hint
                       v-mask="'##/##/####'"
                       class="ml-1 mr-1"
                       :rules="rules.data_nascimento"
@@ -143,7 +145,8 @@
                       dense
                       label="Comprovante de residência no nome do titular"
                       class="mr-1 ml-1"
-                      placeholder="Energia, água, telefone fixo ou faturas (TV por assinatura, cartão de crédito ou IPTU)"
+                      hint="Energia, água, telefone fixo ou faturas (TV por assinatura, cartão de crédito ou IPTU)"
+                      persistent-hint
                       :rules="rules.comprovante_residencia_arquivo"
                       @change="selecionComprovanteResidencial"
                     ></v-file-input>
@@ -183,6 +186,20 @@
             <v-card-text>
               <h3>Bata uma selfie</h3>
               <PhotoCaptureVue v-model="imageBase64" v-if="e1 == 3" align="center" class="mt-3" />
+              <v-alert text outlined color="deep-orange" icon="mdi-fire" class="mt-3">
+                <p align="">
+                  Declaro exatos e verdadeiros os dados constantes neste formulário de Pré-Cadastro e autorizo a minha inclusão no seu cadastro,
+                  de acordo com o artigo 43, parágrafo 2º, do Código de Defesa do Consumidor. Autorizo a confirmação das informações acima apresentadas,
+                  Autorizo aconsultas ao SCR (Sistema de Crédito do Banco Central),
+                  <b>SPC, SERASA</b> eaos orgãos de Proteção ao Crédito.
+                  Autorizo o envio de informações e o contato por telefone fixo, celular e/ou email.
+                  <b>Crédito sujeito a análise e aprovação</b>
+                </p>
+                <v-checkbox
+                  v-model="aceita_termos"
+                  label="Autorizo o envio pela Domestilar LTDA. de informações, promoções, novidade dos produtos e serviços da loja, para os meus contatos indicados no formulário de pré-cadastro."
+                ></v-checkbox>
+              </v-alert>
             </v-card-text>
             <v-card-actions>
               <v-btn color="default" @click="e1 = 2" :loading="$store.getters.getOverlay">Anterior</v-btn>
@@ -211,7 +228,7 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
-    <v-dialog
+    <!-- <v-dialog
       v-model="termos"
       scrollable
       persistent
@@ -220,7 +237,7 @@
     >
       <v-card>
         <v-card-actions>Termos</v-card-actions>
-        <v-card-text align="">
+        <v-card-text align>
           <p align="justify">
             Declaro exatos e verdadeiros os dados constantes neste formulário de Pré-Cadastro e autorizo a minha inclusão no seu cadastro,
             de acordo com o artigo 43, parágrafo 2º, do Código de Defesa do Consumidor. Autorizo a confirmação das informações acima apresentadas,
@@ -229,13 +246,15 @@
             Autorizo o envio de informações e o contato por telefone fixo, celular e/ou email.
             <b>Crédito sujeito a análise e aprovação</b>
           </p>
-          <p align="justify">Autorizo o envio pela Domestilar LTDA. de informações, promoções, novidade dos produtos e serviços da loja, para os meus contatos indicados no formulário de pré-cadastro.</p>
+          <p
+            align="justify"
+          >Autorizo o envio pela Domestilar LTDA. de informações, promoções, novidade dos produtos e serviços da loja, para os meus contatos indicados no formulário de pré-cadastro.</p>
         </v-card-text>
         <v-card-actions>
           <v-btn color="success" block @click="termos = false">ACEITAR TERMOS</v-btn>
         </v-card-actions>
       </v-card>
-    </v-dialog>
+    </v-dialog>-->
   </v-row>
 </template>
 
@@ -243,11 +262,13 @@
 import { mapGetters, mapActions } from "vuex";
 // import {PhotoCapture} from 'vue-media-recorder'
 import PhotoCaptureVue from "@/components/PhotoCapture.vue";
+import Snackbar from "../components/shared/Snackbar.vue";
 export default {
   name: "IndexPage",
   auth: false,
   components: {
-    PhotoCaptureVue
+    PhotoCaptureVue,
+    Snackbar
   },
   data() {
     return {
@@ -278,7 +299,8 @@ export default {
       },
       modalConfirmar: false,
       imageBase64: "",
-      termos: true
+      termos: true,
+      aceita_termos: false
     };
   },
   watch() {
@@ -346,7 +368,6 @@ export default {
         this.crediario.documento_foto_arquivo
       );
       data.append("cpf_cnpj_arquivo", this.crediario.cpf_cnpj_arquivo);
-      console.log("dados crediario", this.crediario);
 
       if (this.getCrediario.foto_selfie) {
         data.append("foto_selfie", this.getCrediario.foto_selfie)
@@ -356,10 +377,60 @@ export default {
 
       this.salvarCrediario(data);
     },
+    consultaCpf() {
+      if (this.isValidCPF(this.crediario.cpf_cnpj) != true) {
+        this.crediario.cpf_cnpj = ''
+        this.$store.dispatch('snackbarError', 'O cpf informado é inválido.', { root: true })
+      }
+
+      this.$axios.get(`/crediario/consulta-cpf?cpf=${this.crediario.cpf_cnpj}`)
+        .then(res => {
+          if (res.data.cadastrado) {
+            this.crediario.cpf_cnpj = ''
+            this.$store.dispatch('snackbarWarning', res.data.message)
+          }
+        })
+        .catch(e => console.log(e))
+    },
+    isValidCPF(cpf) {
+      if (typeof cpf !== "string") return false
+      cpf = cpf.replace(/[\s.-]*/igm, '')
+      if (
+        !cpf ||
+        cpf.length != 11 ||
+        cpf == "00000000000" ||
+        cpf == "11111111111" ||
+        cpf == "22222222222" ||
+        cpf == "33333333333" ||
+        cpf == "44444444444" ||
+        cpf == "55555555555" ||
+        cpf == "66666666666" ||
+        cpf == "77777777777" ||
+        cpf == "88888888888" ||
+        cpf == "99999999999"
+      ) {
+        return false
+      }
+      var soma = 0
+      var resto
+      for (var i = 1; i <= 9; i++)
+        soma = soma + parseInt(cpf.substring(i - 1, i)) * (11 - i)
+      resto = (soma * 10) % 11
+      if ((resto == 10) || (resto == 11)) resto = 0
+      if (resto != parseInt(cpf.substring(9, 10))) return false
+      soma = 0
+      for (var i = 1; i <= 10; i++)
+        soma = soma + parseInt(cpf.substring(i - 1, i)) * (12 - i)
+      resto = (soma * 10) % 11
+      if ((resto == 10) || (resto == 11)) resto = 0
+      if (resto != parseInt(cpf.substring(10, 11))) return false
+      return true
+    }
   },
   created() {
     // console.log(this.$store.getters.getOverlay)
     this.$store.dispatch('alert', { type: 'success', message: 'teste alert' })
+
   }
 };
 </script>

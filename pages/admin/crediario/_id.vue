@@ -99,7 +99,7 @@
                             </v-flex>
                         </v-layout>
                     </v-flex>
-                    <v-flex xs12 md2>
+                    <!-- <v-flex xs12 md2>
                         <v-text-field
                             label="CEP"
                             v-model="getCrediario.cep"
@@ -165,7 +165,7 @@
                             class="ml-2 mr-2"
                         ></v-text-field>
                     </v-flex>
-                   
+                    -->
                     <v-flex xs12 md4>
                         <v-text-field
                             label="Status"
@@ -316,8 +316,6 @@
                             type="date"
                         ></v-text-field>
                     </v-flex>
-
-                        
                 </v-layout>
                 </v-form>
             </v-tab-item>
@@ -335,17 +333,21 @@
             <v-btn text color="default" @click="$router.push('/admin/crediario')">voltar</v-btn>
             <v-btn color="warning" @click="setModalValidarCrediario(true)" v-if="getCrediario.status == 'AGUARDANDO VALIDAÇÃO'">Validar cadastro</v-btn>
             <v-btn color="primary" @click="setModalAprovarCrediario(true)" v-if="getCrediario.status == 'AGUARDANDO APROVAÇÃO'">Aprovar cadastro</v-btn>
+            <v-btn color="error" @click="setModalRejeitarCrediario(true)" v-if="getCrediario.status == 'AGUARDANDO APROVAÇÃO' || getCrediario.status == 'AGUARDANDO VALIDAÇÃO'">Rejeitar cadastro</v-btn>
+            <!-- <v-btn color="error" @click="setModalRejeitarCrediario(true)">Rejeitar cadastro</v-btn> -->
             <v-spacer></v-spacer>
             <v-btn color="success" @click="salvar()">Salvar</v-btn>
         </v-card-actions>
         <ModalValidar />
         <ModalAprovar />
+        <ModalRejeitar />
     </v-card>
 </template>
 <script>
 import { mapActions, mapGetters } from 'vuex'
 import ModalValidar from "@/components/admin/crediario/ModalValidar"
 import ModalAprovar from "@/components/admin/crediario/ModalAprovar"
+import ModalRejeitar from "@/components/admin/crediario/ModalRejeitar"
 import CardAnexos from "@/components/admin/crediario/CardAnexos"
 import CardReferencia from "@/components/admin/crediario/CardReferenciaPessoal"
 import axios from 'axios'
@@ -356,6 +358,7 @@ export default {
         ModalAprovar,
         CardAnexos,
         CardReferencia,
+        ModalRejeitar,
     },
     data() {
         return {
@@ -376,6 +379,7 @@ export default {
             atualizarCrediario: 'crediario/atualizarCrediario',
             validarCrediario: 'crediario/validarCrediario',
             setModalValidarCrediario: 'crediario/setModalValidarCrediario',
+            setModalRejeitarCrediario: 'crediario/setModalRejeitarCrediario',
             setModalAprovarCrediario: 'crediario/setModalAprovarCrediario',
         }),
         salvar() {

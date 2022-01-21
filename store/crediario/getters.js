@@ -4,5 +4,6 @@ export default {
   getModalExcluirCrediario: (state) => state.modalExcluirCrediario,
   getModalValidarCrediario: (state) => state.modalValidarCrediario,
   getModalAprovarCrediario: (state) => state.modalAprovarCrediario,
+  getModalRejeitarCrediario: (state) => state.modalRejeitarCrediario,
   getCategoriasProfissionais: (state) => state.categoriasProfissionais,
 };

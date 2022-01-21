@@ -20,13 +20,19 @@
                                 @click="modalVerificar = true, anexoSelecionado = anexo"
                                 
                                 x-small
-                            >APROVAR</v-btn> -->
+                            >APROVAR</v-btn>-->
                             <v-btn
                                 color="success"
                                 @click="modalVerificar = true, anexoSelecionado = anexo"
-                                v-if="anexo.status != 'APROVADO'"
+                                v-if="anexo.status != 'APROVADO' && anexo.status != 'REJEITADO'"
                                 x-small
                             >APROVAR</v-btn>
+                            <v-btn
+                                color="error"
+                                @click="modalRejeitar = true, anexoSelecionado = anexo"
+                                v-if="anexo.status != 'REJEITADO' && anexo.status != 'APROVADO'"
+                                x-small
+                            >REJEITAR</v-btn>
                         </td>
                     </tr>
                 </tbody>
@@ -50,6 +56,32 @@
                 </v-card-actions>
             </v-card>
         </v-dialog>
+        <v-dialog
+            v-model="modalRejeitar"
+            persistent
+            max-width="500px"
+            transition="dialog-transition"
+        >
+            <v-card>
+                <v-card-title>Rejeitar</v-card-title>
+                <v-card-text>
+                    <v-form ref="formRejeitarDocumento" class="px-3">
+                        <v-textarea
+                            v-model="anexoSelecionado.motivo_rejeicao"
+                            outlined
+                            name="input-7-4"
+                            label="Motivo da rejeição"
+                            :rules="rules.motivo_rejeicao"
+                        ></v-textarea>
+                    </v-form>
+                </v-card-text>
+                <v-card-actions>
+                    <v-btn color="default" @click="modalRejeitar = false">Voltar</v-btn>
+                    <v-spacer></v-spacer>
+                    <v-btn color="error" @click="rejeitar()">Rejeitar</v-btn>
+                </v-card-actions>
+            </v-card>
+        </v-dialog>
     </div>
 </template>
 <script>
@@ -59,7 +91,11 @@ export default {
         return {
             modalVerificar: false,
             anexoSelecionado: "",
-            anexos: []
+            anexos: [],
+            modalRejeitar: false,
+            rules: {
+                motivo_rejeicao: [(v) => !!v || "Campo obrigatório."],
+            }
         }
     },
     computed: {
@@ -71,14 +107,14 @@ export default {
         visualizar(url) {
             window.open(url, '_blank')
         },
-        listar(){
+        listar() {
             this.$axios.get(`anexos?crediario_id=${this.getCrediario.id}`)
-            .then(res => {
-                this.anexos = res.data
-            })
-            .catch(e => {
-                console.log(e)
-            })
+                .then(res => {
+                    this.anexos = res.data
+                })
+                .catch(e => {
+                    console.log(e)
+                })
         },
         aprovar() {
             this.modalVerificar = false
@@ -88,20 +124,42 @@ export default {
                     this.$store.commit('setOverlay', false)
                     const anexoIndex = this.anexos.findIndex(obj => obj.id == this.anexoSelecionado.id)
                     this.anexos[anexoIndex].status = res.data.status
-                    alert('Documento verificado.')
+                    // alert('Documento aprovado.')
+                    this.$store.dispatch('snackbarSuccess', 'Documento verificado.')
+
                 })
                 .catch(e => {
                     console.log(e)
                     this.$store.commit('setOverlay', false)
                 })
         },
-        reitar() {
+        rejeitar() {
+            if (this.$refs.formRejeitarDocumento.validate() == false) {
+                return
+            }
 
+            this.modalRejeitar = false
+            this.$store.commit('setOverlay', true)
+            this.$axios.post(`anexo/${this.anexoSelecionado.id}/rejeitar`, { motivo_rejeicao: this.anexoSelecionado.motivo_rejeicao })
+                .then(res => {
+                    this.anexoSelecionado.motivo_rejeicao = ''
+                    this.$store.commit('setOverlay', false)
+                    const anexoIndex = this.anexos.findIndex(obj => obj.id == this.anexoSelecionado.id)
+                    this.anexos[anexoIndex].status = res.data.status
+                    // alert('Documento rejeitado.')
+                    this.$store.dispatch('snackbarWarning', 'Documento rejeitado.')
+
+
+                })
+                .catch(e => {
+                    console.log(e)
+                    this.$store.commit('setOverlay', false)
+                })
         }
 
 
     },
-    created(){
+    created() {
         this.listar()
         // this.anexos = this.getCrediario.anexos
     }

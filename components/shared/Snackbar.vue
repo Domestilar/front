@@ -19,7 +19,7 @@ import {mapGetters} from 'vuex'
         mode: '',
         snackbar: true,
         text: '',
-        timeout: 10000,
+        timeout: 12000,
         x: null,
         y: 'top',
         snackbar: {},
