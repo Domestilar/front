@@ -70,6 +70,11 @@ export default {
           icon: 'mdi-chart-bubble',
           title: 'Crediários',
           to: '/admin/crediario'
+        },
+        {
+          icon: 'mdi-account-settings',
+          title: 'Usuário',
+          to: '/admin/usuario'
         }
       ],
       miniVariant: false,
