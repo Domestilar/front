@@ -3,7 +3,7 @@
 ###Instalação:
 Clonar projeto:
 ```
-git clone https://github.com/amapa-piscinas/dashboard
+git clone https://github.com/Domestilar/front.git
 ```
 Instalar dependências:
 ```
